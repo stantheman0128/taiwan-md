@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 330" width="1200" height="330" role="img" aria-labelledby="t d">
+  <title id="t">Git 預設把中文檔名印成八進位跳脫，關掉 core.quotePath 才看得到字</title>
+  <desc id="d">終端機實際輸出。git status --short 印出 A "knowledge/Technology/\345\212\237\345\255\227…\347\267\232.md"，整條路徑加了引號、每個中文字變成三組八進位。加上 -c core.quotePath=false 之後，同一個檔名印成 knowledge/Technology/功字裡的那根反斜線.md。</desc>
+  <rect width="1200" height="330" rx="16" fill="#1c1b19"/>
+  <rect width="1200" height="46" rx="16" fill="#2a2825"/>
+  <rect y="30" width="1200" height="16" fill="#2a2825"/>
+  <circle cx="34" cy="23" r="8" fill="#ef6b5b"/>
+  <circle cx="60" cy="23" r="8" fill="#f2b84b"/>
+  <circle cx="86" cy="23" r="8" fill="#5fc16a"/>
+  <text x="600" y="30" font-family="'SFMono-Regular',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size="18" fill="#9b958b" text-anchor="middle">bash</text>
+  <g font-family="'SFMono-Regular',Menlo,Consolas,'DejaVu Sans Mono','WenQuanYi Zen Hei Mono',monospace" font-size="23" fill="#e7e1d6" xml:space="preserve">
+    <text x="36" y="102">$ git status --short</text>
+    <text x="36" y="142" fill="#fb923c">A  "knowledge/Technology/\345\212\237\345\255\227\350\243\241\347\232\204</text>
+    <text x="36" y="176" fill="#fb923c">\351\202\243\346\240\271\345\217\215\346\226\234\347\267\232.md"</text>
+    <text x="36" y="252">$ git -c core.quotePath=false status --short</text>
+    <text x="36" y="292" fill="#86efac">A  knowledge/Technology/功字裡的那根反斜線.md</text>
+  </g>
+</svg>

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 350" width="1200" height="350" role="img" aria-labelledby="t d">
+  <title id="t">用斜線切 Windows 路徑切不開，交給 pathlib 才切得出分類</title>
+  <desc id="d">Python 實際輸出。p 是 knowledge\Technology\功字裡的那根反斜線.md。p.split('/') 回傳只有一個元素的清單，整條路徑原樣回來；PureWindowsPath(p).parts 回傳 knowledge、Technology、功字裡的那根反斜線.md 三段。</desc>
+  <rect width="1200" height="350" rx="16" fill="#1c1b19"/>
+  <rect width="1200" height="46" rx="16" fill="#2a2825"/>
+  <rect y="30" width="1200" height="16" fill="#2a2825"/>
+  <circle cx="34" cy="23" r="8" fill="#ef6b5b"/>
+  <circle cx="60" cy="23" r="8" fill="#f2b84b"/>
+  <circle cx="86" cy="23" r="8" fill="#5fc16a"/>
+  <text x="600" y="30" font-family="'SFMono-Regular',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size="18" fill="#9b958b" text-anchor="middle">python3</text>
+  <g font-family="'SFMono-Regular',Menlo,Consolas,'DejaVu Sans Mono','WenQuanYi Zen Hei Mono',monospace" font-size="25" fill="#e7e1d6" xml:space="preserve">
+    <text x="36" y="104">&gt;&gt;&gt; p = r'knowledge\Technology\功字裡的那根反斜線.md'</text>
+    <text x="36" y="164">&gt;&gt;&gt; p.split('/')</text>
+    <text x="36" y="206" fill="#fb923c">['knowledge\\Technology\\功字裡的那根反斜線.md']</text>
+    <text x="36" y="272">&gt;&gt;&gt; PureWindowsPath(p).parts</text>
+    <text x="36" y="314" fill="#86efac">('knowledge', 'Technology', '功字裡的那根反斜線.md')</text>
+  </g>
+</svg>

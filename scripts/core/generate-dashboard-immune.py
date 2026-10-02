@@ -791,7 +791,9 @@ def main():
     }
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    OUTPUT_FILE.write_text(json.dumps(output, indent=2, ensure_ascii=False) + "\n")
+    # 明講 UTF-8：Windows 繁中預設 cp950，這份 committed JSON 會被存成 cp950，Node 讀成亂碼；
+    # status 帶 🔴 時（immuneScore < 40）cp950 編不出來，直接拋例外留下 0 byte 檔。
+    OUTPUT_FILE.write_text(json.dumps(output, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
     print(f"\n🛡️  immune_score = {immune_score} ({status})", file=sys.stderr)
     if top_gap:

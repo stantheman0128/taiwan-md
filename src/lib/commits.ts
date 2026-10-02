@@ -1,5 +1,6 @@
-import { execSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Lang } from '../types';
 
@@ -46,12 +47,27 @@ function parseCommitMessage(message: string): string {
 const ARTICLE_RE = /^knowledge\/([A-Z][A-Za-z]*)\/([^/]+)\.md$/;
 const MAX_ARTICLES_PER_COMMIT = 4;
 
+// Only link articles that still have a page: history has deleted / renamed
+// files and _*.md hubs, which would be dead links on /changelog (same rule as
+// scripts/core/generate-changelog-data.js).
+const existsCache = new Map<string, boolean>();
+function articleExists(cat: string, slug: string): boolean {
+  if (slug.startsWith('_')) return false;
+  const key = `${cat}/${slug}`;
+  let hit = existsCache.get(key);
+  if (hit === undefined) {
+    hit = existsSync(join(PROJECT_ROOT, 'knowledge', cat, `${slug}.md`));
+    existsCache.set(key, hit);
+  }
+  return hit;
+}
+
 function filesToArticles(files: string[]): ChangelogArticle[] {
   const seen = new Set<string>();
   const out: ChangelogArticle[] = [];
   for (const file of files) {
     const m = ARTICLE_RE.exec(file);
-    if (!m) continue;
+    if (!m || !articleExists(m[1], m[2])) continue;
     const url = `/${m[1].toLowerCase()}/${m[2]}`;
     if (seen.has(url)) continue;
     seen.add(url);
@@ -82,8 +98,22 @@ function getCommitsFromGit(limit = 100): Commit[] {
   try {
     // %x1e (RS) starts each commit record; %x1f (US) separates meta fields;
     // --name-only appends changed files (one per line) after the meta line.
-    const raw = execSync(
-      `git log -n ${Math.max(limit, 1)} --date=iso-strict --name-only --pretty=format:%x1e%H%x1f%aI%x1f%an%x1f%s`,
+    // core.quotepath=false: git's default quotes and octal-escapes Chinese
+    // paths, so ARTICLE_RE would miss most articles (same fix as
+    // scripts/core/generate-changelog-data.js). No shell, so cmd.exe can't
+    // reinterpret the %-format either.
+    const raw = execFileSync(
+      'git',
+      [
+        '-c',
+        'core.quotepath=false',
+        'log',
+        '-n',
+        String(Math.max(limit, 1)),
+        '--date=iso-strict',
+        '--name-only',
+        '--pretty=format:%x1e%H%x1f%aI%x1f%an%x1f%s',
+      ],
       {
         cwd: PROJECT_ROOT,
         encoding: 'utf8',
