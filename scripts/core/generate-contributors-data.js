@@ -36,7 +36,7 @@
  * v1.0 | 2026-04-19 β — CheYu 指派，配合 gitignore prebuild-regen JSON refactor
  */
 
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -122,8 +122,20 @@ async function fetchContributors() {
  */
 function parseGitLog() {
   const SEP = '<<<__COMMIT__>>>';
-  const out = execSync(
-    `git log --no-merges --format='${SEP}%n%H%n%ae%n%ai' --name-only`,
+  // No shell: under cmd.exe (npm's default script-shell on Windows) the single
+  // quotes stay literal and <<< / >>> become redirections, so the call threw.
+  // core.quotepath=false: git's default quotes Chinese paths, and the
+  // knowledge/ classification below would miss those commits.
+  const out = execFileSync(
+    'git',
+    [
+      '-c',
+      'core.quotepath=false',
+      'log',
+      '--no-merges',
+      `--format=${SEP}%n%H%n%ae%n%ai`,
+      '--name-only',
+    ],
     { cwd: PROJECT_ROOT, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 },
   );
 

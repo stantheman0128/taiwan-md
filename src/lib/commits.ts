@@ -1,4 +1,4 @@
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import type { Lang } from '../types';
@@ -82,8 +82,22 @@ function getCommitsFromGit(limit = 100): Commit[] {
   try {
     // %x1e (RS) starts each commit record; %x1f (US) separates meta fields;
     // --name-only appends changed files (one per line) after the meta line.
-    const raw = execSync(
-      `git log -n ${Math.max(limit, 1)} --date=iso-strict --name-only --pretty=format:%x1e%H%x1f%aI%x1f%an%x1f%s`,
+    // core.quotepath=false: git's default quotes and octal-escapes Chinese
+    // paths, so ARTICLE_RE would miss most articles (same fix as
+    // scripts/core/generate-changelog-data.js). No shell, so cmd.exe can't
+    // reinterpret the %-format either.
+    const raw = execFileSync(
+      'git',
+      [
+        '-c',
+        'core.quotepath=false',
+        'log',
+        '-n',
+        String(Math.max(limit, 1)),
+        '--date=iso-strict',
+        '--name-only',
+        '--pretty=format:%x1e%H%x1f%aI%x1f%an%x1f%s',
+      ],
       {
         cwd: PROJECT_ROOT,
         encoding: 'utf8',

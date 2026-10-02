@@ -1,4 +1,4 @@
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -57,8 +57,24 @@ function dedupeAndTrim(commits, limit) {
 function getCommitsFromGit(limit) {
   try {
     // --name-only appends changed files after each %x1e-delimited meta line.
-    const raw = execSync(
-      `git log -n ${Math.max(limit, 1)} --date=iso-strict --name-only --pretty=format:%x1e%H%x1f%aI%x1f%an%x1f%s`,
+    // core.quotepath=false: with git's default, a Chinese path comes back as
+    // "knowledge/People/\347\230\202..." (quoted + octal-escaped), ARTICLE_RE
+    // never matches, and the commit loses its article links. Measured on this
+    // repo's history with default git config: 67 links instead of 894. The
+    // deploy job runs on ubuntu without setting quotepath.
+    // execFileSync (no shell) also keeps cmd.exe from reading %...% in the format.
+    const raw = execFileSync(
+      'git',
+      [
+        '-c',
+        'core.quotepath=false',
+        'log',
+        '-n',
+        String(Math.max(limit, 1)),
+        '--date=iso-strict',
+        '--name-only',
+        '--pretty=format:%x1e%H%x1f%aI%x1f%an%x1f%s',
+      ],
       {
         cwd: PROJECT_ROOT,
         encoding: 'utf8',

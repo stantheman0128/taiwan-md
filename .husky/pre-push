@@ -59,7 +59,9 @@ elif [ "$SWEEP_SCOPE" = "changed" ] && [ -f "$REPO/scripts/tools/article-health.
   # 結果是格式債的 canonical default（§1b P1 推修補進投稿者分支）在維護者剛改完工具時
   # 一定失敗，且失敗訊息完全不指向原因。這跟本檔第 129 行那句「|| true 必要」是同一種病，
   # 教訓學在下面那一處、沒有 apply 到上面這一處。
-  CHANGED="$( { git diff --name-only "@{u}"...HEAD 2>/dev/null; git show --name-only --pretty=format: HEAD 2>/dev/null; } | grep -E '^knowledge/.*\.md$' | sort -u || true)"
+  # core.quotepath=false：git 預設把中文路徑加引號轉義成 "knowledge/\347..."，下面的
+  # ^knowledge/ 對不上，中文檔名的文章全被略過，hook 照樣印 ✅。
+  CHANGED="$( { git -c core.quotepath=false diff --name-only "@{u}"...HEAD 2>/dev/null; git -c core.quotepath=false show --name-only --pretty=format: HEAD 2>/dev/null; } | grep -E '^knowledge/.*\.md$' | sort -u || true)"
   if [ -n "$CHANGED" ]; then
     BAD=0
     for f in $CHANGED; do
