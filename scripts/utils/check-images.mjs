@@ -16,8 +16,13 @@
 
 import { readFileSync, readdirSync, existsSync } from 'fs';
 import { join, relative } from 'path';
+import { fileURLToPath } from 'url';
 
-const ROOT = new URL('../..', import.meta.url).pathname;
+// fileURLToPath, not URL.pathname: .pathname is still URL-encoded and on
+// Windows starts with /C:/, so the joined dirs never existed and the check
+// passed without scanning a single file (also any checkout path with a space
+// or Chinese characters on macOS/Linux).
+const ROOT = fileURLToPath(new URL('../..', import.meta.url));
 const PUBLIC = join(ROOT, 'public');
 const jsonMode = process.argv.includes('--json');
 

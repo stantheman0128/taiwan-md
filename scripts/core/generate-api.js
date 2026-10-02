@@ -401,7 +401,10 @@ async function main() {
 }
 
 // 執行
-if (import.meta.url === `file://${process.argv[1]}`) {
+// 比路徑不比 URL：Windows 上 import.meta.url 是 file:///C:/…，`file://${argv[1]}` 是
+// file://C:\…，永遠不相等，main() 不跑、也不報錯，articles.json / stats.json /
+// Smart-404 的 article-index.json 靜默停在舊版。路徑含空白或中文時 macOS/Linux 也一樣。
+if (path.resolve(process.argv[1] || '') === __filename) {
   main().catch((error) => {
     console.error('❌ 錯誤:', error);
     process.exit(1);

@@ -274,6 +274,7 @@ const ALL_CONTRIB_EMOJI = {
   doc: '📖',
   projectManagement: '📆',
   infra: '🚇',
+  platform: '📦', // CONTRIBUTOR-SYSTEM recommends it; was missing, so the badge silently vanished
   maintenance: '🚧',
   test: '⚠️',
   question: '💬',
@@ -318,10 +319,14 @@ const TYPE_ORDER = Object.keys(ALL_CONTRIB_EMOJI);
 function buildAllContributors(authors) {
   const rc = readAllContributorsRc();
   const rcByLogin = new Map(rc.map((c) => [c.login.toLowerCase(), c]));
+  const unknownTypes = new Set();
   const toEmoji = (types) =>
     [...new Set(types)]
       .sort((x, y) => TYPE_ORDER.indexOf(x) - TYPE_ORDER.indexOf(y))
-      .map((t) => ALL_CONTRIB_EMOJI[t])
+      .map((t) => {
+        if (!ALL_CONTRIB_EMOJI[t]) unknownTypes.add(t);
+        return ALL_CONTRIB_EMOJI[t];
+      })
       .filter(Boolean);
   const seen = new Set();
   const out = [];
@@ -353,6 +358,11 @@ function buildAllContributors(authors) {
       profileUrl: c.profile || `https://github.com/${c.login}`,
       types: toEmoji(c.contributions || []),
     });
+  }
+  if (unknownTypes.size) {
+    console.warn(
+      `⚠️  .all-contributorsrc 有 ALL_CONTRIB_EMOJI 不認得的類別，徽章不會顯示：${[...unknownTypes].join(', ')}`,
+    );
   }
   return out;
 }
