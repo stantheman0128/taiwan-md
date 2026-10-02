@@ -404,7 +404,19 @@ async function main() {
 // 比路徑不比 URL：Windows 上 import.meta.url 是 file:///C:/…，`file://${argv[1]}` 是
 // file://C:\…，永遠不相等，main() 不跑、也不報錯，articles.json / stats.json /
 // Smart-404 的 article-index.json 靜默停在舊版。路徑含空白或中文時 macOS/Linux 也一樣。
-if (path.resolve(process.argv[1] || '') === __filename) {
+// realpath 兩邊都取：__filename 是解開 symlink 的真實路徑，argv[1] 不一定是
+// （macOS 的 /tmp 其實是 /private/tmp）。
+function isEntryPoint() {
+  try {
+    return (
+      fs.realpathSync(path.resolve(process.argv[1] || '')) ===
+      fs.realpathSync(__filename)
+    );
+  } catch {
+    return false;
+  }
+}
+if (isEntryPoint()) {
   main().catch((error) => {
     console.error('❌ 錯誤:', error);
     process.exit(1);
