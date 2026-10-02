@@ -19,12 +19,28 @@ function parseCommitMessage(message) {
 // same logic in src/lib/commits.ts). knowledge/{Cap-Category}/{slug}.md →
 // /{category-lower}/{slug}; lowercase lang dirs + _*.json excluded by [A-Z].
 const ARTICLE_RE = /^knowledge\/([A-Z][A-Za-z]*)\/([^/]+)\.md$/;
+// Only link articles that still have a page. History contains deleted and
+// renamed files (/food/新港怡) and hub files (_Food Hub.md) that have no page
+// at /{cat}/{slug}; with Chinese paths readable now, those became dead links
+// on /changelog.
+const _existsCache = new Map();
+function articleExists(cat, slug) {
+  if (slug.startsWith('_')) return false;
+  const key = `${cat}/${slug}`;
+  if (!_existsCache.has(key)) {
+    _existsCache.set(
+      key,
+      fs.existsSync(path.join(PROJECT_ROOT, 'knowledge', cat, `${slug}.md`)),
+    );
+  }
+  return _existsCache.get(key);
+}
 function filesToArticles(files) {
   const seen = new Set();
   const out = [];
   for (const file of files) {
     const m = ARTICLE_RE.exec(file);
-    if (!m) continue;
+    if (!m || !articleExists(m[1], m[2])) continue;
     const url = `/${m[1].toLowerCase()}/${m[2]}`;
     if (seen.has(url)) continue;
     seen.add(url);

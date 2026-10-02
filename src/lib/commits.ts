@@ -1,5 +1,6 @@
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Lang } from '../types';
 
@@ -46,12 +47,27 @@ function parseCommitMessage(message: string): string {
 const ARTICLE_RE = /^knowledge\/([A-Z][A-Za-z]*)\/([^/]+)\.md$/;
 const MAX_ARTICLES_PER_COMMIT = 4;
 
+// Only link articles that still have a page: history has deleted / renamed
+// files and _*.md hubs, which would be dead links on /changelog (same rule as
+// scripts/core/generate-changelog-data.js).
+const existsCache = new Map<string, boolean>();
+function articleExists(cat: string, slug: string): boolean {
+  if (slug.startsWith('_')) return false;
+  const key = `${cat}/${slug}`;
+  let hit = existsCache.get(key);
+  if (hit === undefined) {
+    hit = existsSync(join(PROJECT_ROOT, 'knowledge', cat, `${slug}.md`));
+    existsCache.set(key, hit);
+  }
+  return hit;
+}
+
 function filesToArticles(files: string[]): ChangelogArticle[] {
   const seen = new Set<string>();
   const out: ChangelogArticle[] = [];
   for (const file of files) {
     const m = ARTICLE_RE.exec(file);
-    if (!m) continue;
+    if (!m || !articleExists(m[1], m[2])) continue;
     const url = `/${m[1].toLowerCase()}/${m[2]}`;
     if (seen.has(url)) continue;
     seen.add(url);
